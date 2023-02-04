@@ -20,7 +20,7 @@ router.get(`/:id`, async (req, res) =>{
     } 
     res.status(200).send(user);
 })
-router.post('/',async(req,res)=>{
+router.post('/register',async(req,res)=>{
     let user=new User({
         name: req.body.name,
         email: req.body.email,
@@ -37,7 +37,7 @@ router.post('/',async(req,res)=>{
     return res.status(404).send("User cannot be created ")}
     res.send(user)
 })
-router.post('/auth/login',async(req,res)=>{
+router.post('/login',async(req,res)=>{
     let user=await User.findOne({email:req.body.email})
     const secret=process.env.SECRET
     if(!user){
@@ -46,10 +46,11 @@ router.post('/auth/login',async(req,res)=>{
     if(user && bycrpt.compareSync(req.body.password, user.password)){
         const token=jwt.sign(
             {
-                userID:user.id
+                userID:user.id,
+                isAdmin:user.isAdmin
             },
             secret,{
-                expiresIn:'0.5h'
+                expiresIn:'1h'
             }
           )
         return res.status(200).send({user:user.email,token :token})
@@ -58,4 +59,33 @@ router.post('/auth/login',async(req,res)=>{
     }
     
 })
+router.delete('/:id',(req,res)=>{
+    User.findByIdAndDelete(req.params.id).then(product=>{
+        if(product){
+            return res.status(200).json({
+                succes:true, msg:"Product deleted"
+            })
+        }else{
+            return res.status(404).json({
+                success:false ,msg:"User not Found"
+        })}
+    }).catch(
+        err=>{
+            return res.status(200).json({success:false ,error:err})
+
+        }
+    )
+})
+
+router.get(`/get/count`, async (req, res) =>{
+    const userCount = await User.countDocuments()
+
+    if(!userCount) {
+        res.status(500).json({success: false})
+    } 
+    res.send({
+        userCount: userCount
+    });
+})
+
 module.exports =router;

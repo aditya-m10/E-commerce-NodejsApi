@@ -7,16 +7,18 @@ const Product=require("../models/product")
 const router=express.Router()
 
 router.get("/", async (req,res)=>{
-    if(req.query.category){
+        if(req.query.category){
+
         var  product =await Product.find({category:req.query.category}).populate("category")//select("name image -_id")
     }else{
+
         var product =await Product.find().populate("category")//select("name image -_id")
 
     }
     if(!product){
-        res.status(500).json({success:false})
+       return res.status(500).json({success:false})
     }
-      res.send(product)
+    return  res.send(product)
 })
 router.get("/:id", async (req,res)=>{
     const product =await Product.findById(req.params.id).populate("category")
